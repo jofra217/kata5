@@ -1,8 +1,6 @@
 package moneycalculator.ui.swing;
 
 import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.PopupMenu;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.JComboBox;
@@ -11,20 +9,21 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import moneycalculator.model.Currency;
 import moneycalculator.model.Money;
 import moneycalculator.ui.MoneyDialog;
 
+public class SwingMoneyDialog extends JPanel implements MoneyDialog {
 
-public class SwingMoneyDialog extends JPanel implements MoneyDialog{
-
-    private String amount = "500";
     private Currency currency;
-    
-    public SwingMoneyDialog() {
-        setLayout(new FlowLayout());
-        add(amount());
-        add(currency());
+    private String amount;
+    private final Currency[] currencies;
+
+    public SwingMoneyDialog(Currency[] currencies) {
+        this.currencies = currencies;
+        this.add(amount());
+        this.add(currency());
     }
 
     @Override
@@ -33,54 +32,18 @@ public class SwingMoneyDialog extends JPanel implements MoneyDialog{
     }
 
     private Component amount() {
-        JTextField field = new JTextField(amount);
-        field.setColumns(10);
-        field.getDocument().addDocumentListener(amountChanged());
-        return field;
+        JTextField textField = new JTextField("100");
+        textField.setColumns(10);
+        textField.getDocument().addDocumentListener(amountChanged());
+        amount = textField.getText();
+        return textField;
     }
 
     private Component currency() {
-        JComboBox<Currency> comboBox = new JComboBox<>(currencies());
-        comboBox.addItemListener(currencyChanged());
-        currency = (Currency) comboBox.getSelectedItem();
-        return comboBox;
-    }
-    
-    private Currency[] currencies(){
-        return new Currency[] {
-            new Currency("EUR", "Euro", "€"),
-            new Currency("USD", "Dolar américano", "$"),
-            new Currency("GPB", "Libra esterlina", "£")
-        };
-    }
-
-    private DocumentListener amountChanged() {
-        return new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateAmount(e);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateAmount(e);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateAmount(e);
-            }
-
-            private void updateAmount(DocumentEvent e) {
-                try {
-                    amount = e.getDocument().getText(0, e.getDocument().getLength());
-                } catch (BadLocationException ex) {
-                }
-            }
-
-        };
-
+        JComboBox combo = new JComboBox(currencies);
+        combo.addItemListener(currencyChanged());
+        currency = (Currency) combo.getSelectedItem();
+        return combo;
     }
 
     private ItemListener currencyChanged() {
@@ -93,4 +56,29 @@ public class SwingMoneyDialog extends JPanel implements MoneyDialog{
         };
     }
 
+    private DocumentListener amountChanged() {
+        return new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                amountChanged(e.getDocument());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                amountChanged(e.getDocument());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                amountChanged(e.getDocument());
+            }
+
+            private void amountChanged(Document document) {
+                try {
+                    amount = document.getText(0, document.getLength());
+                } catch (BadLocationException ex) {
+                }
+            }
+        };
+    }
 }

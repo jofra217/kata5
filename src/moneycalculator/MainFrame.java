@@ -2,55 +2,70 @@ package moneycalculator;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import moneycalculator.control.Command;
+import moneycalculator.model.Currency;
 import moneycalculator.ui.MoneyDialog;
 import moneycalculator.ui.MoneyDisplay;
 import moneycalculator.ui.swing.SwingMoneyDialog;
 import moneycalculator.ui.swing.SwingMoneyDisplay;
 
+public class MainFrame extends JFrame {
 
-public class MainFrame extends JFrame{
-
+    private final Map<String, Command> commands = new HashMap<>();
     private MoneyDialog moneyDialog;
     private MoneyDisplay moneyDisplay;
+    private final Currency[] currencies;
 
-    public MainFrame() {
-        setTitle("Money Calculator");
-        setMinimumSize(new Dimension(400, 400));
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
-        add(moneyDialog(), BorderLayout.NORTH);
-        add(moneyDisplay());
-        add(toolbar(), BorderLayout.SOUTH);
-        setVisible(true);
+    public MoneyDialog getMoneyDialog() {
+        return moneyDialog;
+    }
+
+    public MoneyDisplay getMoneyDisplay() {
+        return moneyDisplay;
+    }
+
+    public MainFrame(Currency[] currencies) {
+        this.currencies = currencies;
+        this.setTitle("Money Calculator");
+        this.setSize(400, 400);
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.add(moneyDialog(), BorderLayout.NORTH);
+        this.add(moneyDisplay(), BorderLayout.CENTER);
+        this.add(toolbar(), BorderLayout.SOUTH);
+        this.setVisible(true);
+    }
+    
+    public void add(Command command){
+        commands.put(command.name(), command);
     }
 
     private Component moneyDialog() {
-        SwingMoneyDialog dialog = new SwingMoneyDialog();
-        moneyDialog = dialog;
-        return dialog;
+        SwingMoneyDialog swingMoneyDialog = new SwingMoneyDialog(currencies);
+        moneyDialog = swingMoneyDialog;
+        return swingMoneyDialog;
     }
 
     private Component moneyDisplay() {
-        SwingMoneyDisplay display = new SwingMoneyDisplay();
-        moneyDisplay = display;
-        return display;
-
+        SwingMoneyDisplay swingMoneyDisplay = new SwingMoneyDisplay();
+        moneyDisplay = swingMoneyDisplay;
+        return swingMoneyDisplay;
     }
 
     private Component toolbar() {
-        JPanel panel = new JPanel(new FlowLayout());
+        JPanel panel = new JPanel();
         panel.add(calculateButton());
         return panel;
     }
 
-    private Component calculateButton() {
+    private JButton calculateButton() {
         JButton button = new JButton("Calculate");
         button.addActionListener(calculate());
         return button;
@@ -58,13 +73,10 @@ public class MainFrame extends JFrame{
 
     private ActionListener calculate() {
         return new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
-                moneyDisplay.display(moneyDialog.get());
+                commands.get("calculate").execute();
             }
         };
     }
-    
-
 }
